@@ -54,6 +54,15 @@ func FileExist(path string) bool {
 	return os.IsExist(err)
 }
 
+//GetPathFormConfig 从配置文件中获取path
+func GetPathFormConfig() string {
+	path, ok := Config()["path"].(string)
+	if !ok {
+		panic("配置文件中\"path\"错误或不存在")
+	}
+	return path
+}
+
 //Config 获取配置信息
 func Config() map[string]interface{} {
 	path, _ := GetCurrentPath()

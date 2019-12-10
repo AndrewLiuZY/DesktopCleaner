@@ -22,13 +22,14 @@ func Clean(dirName string) {
 			if !fileValid(name) { //除去桌面快捷方式
 				continue
 			}
-			path := getDirName(name)
-			dirPath := basePath + "/" + path
-			os.Mkdir(dirPath, os.ModeDir)
-			srcPath := basePath + "/" + file.Name()
-			dstPath := dirPath + "/" + file.Name()
-			copy(srcPath, dstPath)
-			confirm(srcPath, dstPath)
+			if path, ok := getDirName(name); ok {
+				dirPath := basePath + "/" + path
+				os.Mkdir(dirPath, os.ModeDir)
+				srcPath := basePath + "/" + file.Name()
+				dstPath := dirPath + "/" + file.Name()
+				copy(srcPath, dstPath)
+				confirm(srcPath, dstPath)
+			}
 		}
 	}
 }
@@ -84,7 +85,7 @@ func copy(src, dst string) {
 }
 
 //根据扩展名获取文件夹名 TODO:使用sqlite存储
-func getDirName(fileName string) string {
+func getDirName(fileName string) (string, bool) {
 	config := util.Config()
 	dirs, ok := config["directories"].(map[string]interface{})
 	if !ok {
@@ -96,13 +97,24 @@ func getDirName(fileName string) string {
 			panic("config.directories 不存在或格式错误")
 		}
 		if util.Contain(strs, fileName) {
-			return key
+			return key, true
 		}
 	}
-	return "Item"
+	if defaultName, ok := config["default"]; ok {
+		if str, ok := defaultName.(string); ok {
+			return str, true
+		}
+	}
+	return "", false
 }
 
 //检查文件扩展名是否有效 TODO:使用sqlite存储
 func fileValid(t string) bool {
-	return t != "lnk"
+	config := util.Config()
+	if value, ok := config["except"]; ok {
+		if values, ok := value.([]interface{}); ok {
+			return !util.Contain(values, t)
+		}
+	}
+	return true
 }
