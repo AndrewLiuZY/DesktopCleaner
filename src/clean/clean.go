@@ -70,7 +70,7 @@ func copy(src, dst string) {
 		if util.Check(err) {
 			printResult(len(data))
 		}
-	} else { //超过10k的文件直接用io.Copy
+	} else { //超过10kb的文件直接用io.Copy
 		writer, err := os.OpenFile(dst, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
 		util.Check(err)
 		defer writer.Close()
@@ -86,6 +86,7 @@ func getDirName(fileName string) {
 	image := new(fileDir)
 	image.dirName = "Images"
 	image.extensions = []string{"jpg", "png", "gif", "bmp", "tif", "pcx", "tga", "exif", "fpx", "svg", "psd", "cdr", "pcd", "dxf", "ufo", "eps"}
+
 }
 
 //检查文件扩展名是否有效 TODO:使用sqlite存储
