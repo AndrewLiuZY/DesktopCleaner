@@ -39,7 +39,7 @@
             "7z"
         ]
     },
-    "//default":"Item",
+    "default":"Item",
     "except":[
         "lnk"
     ]
