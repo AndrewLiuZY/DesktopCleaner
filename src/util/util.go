@@ -4,7 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 //Check check and print the errors;
@@ -28,9 +31,10 @@ func PanicCheck(err error) {
 }
 
 //Contain Contain
-func Contain(s []string, i string) bool {
+func Contain(s []interface{}, i string) bool {
 	for _, item := range s {
-		if item == i {
+		str, _ := item.(string)
+		if str == i {
 			return true
 		}
 	}
@@ -51,12 +55,30 @@ func FileExist(path string) bool {
 }
 
 //Config 获取配置信息
-func Config() map[string]string {
-	file, err := os.OpenFile("../Data/config.json", os.O_RDONLY, 0666)
+func Config() map[string]interface{} {
+	path, _ := GetCurrentPath()
+	file, err := os.OpenFile(path+"\\config.json", os.O_RDONLY, 0666)
 	PanicCheck(err)
 	defer file.Close()
 	deCoder := json.NewDecoder(file)
-	config := make(map[string]string)
+	config := make(map[string]interface{})
 	deCoder.Decode(&config)
 	return config
+}
+
+//GetCurrentPath 获取当前可执行文件路径
+func GetCurrentPath() (string, error) {
+	file, err := exec.LookPath(os.Args[0])
+	if err != nil {
+		return "", err
+	}
+	path, err := filepath.Abs(file)
+	if err != nil {
+		return "", err
+	}
+	i := strings.LastIndex(path, "/")
+	if i < 0 {
+		i = strings.LastIndex(path, "\\")
+	}
+	return string(path[0 : i+1]), nil
 }

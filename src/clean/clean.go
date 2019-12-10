@@ -1,13 +1,14 @@
 package clean
 
 import (
-	"../util"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"strconv"
 	"strings"
+
+	"../util"
 )
 
 //Clean clean the dir
@@ -21,7 +22,8 @@ func Clean(dirName string) {
 			if !fileValid(name) { //除去桌面快捷方式
 				continue
 			}
-			dirPath := basePath + "/" + name
+			path := getDirName(name)
+			dirPath := basePath + "/" + path
 			os.Mkdir(dirPath, os.ModeDir)
 			srcPath := basePath + "/" + file.Name()
 			dstPath := dirPath + "/" + file.Name()
@@ -82,19 +84,25 @@ func copy(src, dst string) {
 }
 
 //根据扩展名获取文件夹名 TODO:使用sqlite存储
-func getDirName(fileName string) {
-	image := new(fileDir)
-	image.dirName = "Images"
-	image.extensions = []string{"jpg", "png", "gif", "bmp", "tif", "pcx", "tga", "exif", "fpx", "svg", "psd", "cdr", "pcd", "dxf", "ufo", "eps"}
-
+func getDirName(fileName string) string {
+	config := util.Config()
+	dirs, ok := config["directories"].(map[string]interface{})
+	if !ok {
+		panic("config.directories 不存在或格式错误")
+	}
+	for key, value := range dirs {
+		strs, ok := value.([]interface{})
+		if !ok {
+			panic("config.directories 不存在或格式错误")
+		}
+		if util.Contain(strs, fileName) {
+			return key
+		}
+	}
+	return "Item"
 }
 
 //检查文件扩展名是否有效 TODO:使用sqlite存储
 func fileValid(t string) bool {
 	return t != "lnk"
-}
-
-type fileDir struct {
-	dirName    string
-	extensions []string
 }

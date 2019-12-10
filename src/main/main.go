@@ -1,14 +1,15 @@
 package main
 
 import (
-	"../db"
+	"os/user"
+
+	"../clean"
+	"../util"
 )
 
 func main() {
-	// user, err := user.Current()
-	// util.Check(err)
-	// desktopPath := user.HomeDir + "/DeskTop/test/test"
-	// clean.Clean(desktopPath)
-	db.BindExtension("png","Images")
-	db.DisplayDIR()
+	user, err := user.Current()
+	util.Check(err)
+	desktopPath := user.HomeDir + "/DeskTop/test/test"
+	clean.Clean(desktopPath)
 }
