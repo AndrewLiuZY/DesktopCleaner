@@ -16,34 +16,42 @@ func Clean(dirName string) {
 	basePath := dirName
 	files, err := ioutil.ReadDir(basePath)
 	util.Check(err)
+	record := newRecord()
 	for _, file := range files {
 		if i := strings.LastIndex(file.Name(), "."); i >= 1 {
 			name := file.Name()[i+1:]
 			if !fileValid(name) { //除去桌面快捷方式
 				continue
 			}
-			if path, ok := getDirName(name); ok {
-				dirPath := basePath + "/" + path
-				os.Mkdir(dirPath, os.ModeDir)
-				srcPath := basePath + "/" + file.Name()
-				dstPath := dirPath + "/" + file.Name()
-				copy(srcPath, dstPath)
-				confirm(srcPath, dstPath)
+			path, ok := getDirName(name)
+			if !ok {
+				continue
 			}
+			dirPath := basePath + "/" + path
+			os.Mkdir(dirPath, os.ModeDir)
+			srcPath := basePath + "/" + file.Name()
+			dstPath := dirPath + "/" + file.Name()
+			copyFile(srcPath, dstPath)
+			if confirm(srcPath, dstPath){
+				record.addRecord(dirPath, dstPath)
+				}
 		}
 	}
+	record.save()
 }
 
 //校验
-func confirm(srcPath, dstPath string) {
+func confirm(srcPath, dstPath string) bool{
 	if sameFile(srcPath, dstPath) {
 		//复制完成后删除源文件
 		err := os.Remove(srcPath)
 		util.Check(err)
+		return true
 	} else {
 		err := os.Remove(dstPath)
 		util.Check(err)
 		fmt.Println("文件:", srcPath, "移动失败！")
+		return false
 	}
 }
 
@@ -57,7 +65,7 @@ func sameFile(src, dst string) bool {
 }
 
 //复制文件
-func copy(src, dst string) {
+func copyFile(src, dst string) {
 	reader, err := os.Open(src)
 	util.Check(err)
 	defer reader.Close()

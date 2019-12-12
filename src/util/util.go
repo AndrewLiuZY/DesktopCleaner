@@ -51,11 +51,11 @@ func ForEach(s []string, f func(index int, str string)) {
 //FileExist 根据文件路径检查文件是否存在
 func FileExist(path string) bool {
 	_, err := os.Stat(path)
-	return os.IsExist(err)
+	return !os.IsNotExist(err)
 }
 
-//GetPathFormConfig 从配置文件中获取path
-func GetPathFormConfig() string {
+//GetPathFromConfig 从配置文件中获取path
+func GetPathFromConfig() string {
 	path, ok := Config()["path"].(string)
 	if !ok {
 		panic("配置文件中\"path\"错误或不存在")
